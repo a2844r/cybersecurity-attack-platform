@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Cybersecurity Attack Platform</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #0f172a;
+            color: white;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background: #111827;
+            padding: 25px;
+            text-align: center;
+            border-bottom: 1px solid #334155;
+        }
+
+        header h1 {
+            margin: 0;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        .status {
+            background: #1e293b;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
+        .online {
+            color: #22c55e;
+            font-weight: bold;
+        }
+
+        .attacks {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .attack-card {
+            background: #1e293b;
+            padding: 25px;
+            border-radius: 10px;
+            border: 1px solid #334155;
+        }
+
+        .attack-card h2 {
+            margin-top: 0;
+        }
+
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 12px 18px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        .logs {
+            margin-top: 30px;
+            background: #1e293b;
+            padding: 25px;
+            border-radius: 10px;
+        }
+
+        .log-entry {
+            padding: 10px;
+            border-bottom: 1px solid #334155;
+        }
+
+        .log-entry strong {
+            margin: 0 10px;
+        }
+
+        .port-results {
+            margin-top: 30px;
+            background: #1e293b;
+            padding: 25px;
+            border-radius: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            border: 1px solid #555;
+            text-align: left;
+        }
+
+        th {
+            font-weight: bold;
+        }
+
+        @media (max-width: 700px) {
+            .attacks {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>🛡️ Cybersecurity Attack Platform</h1>
+    <p>Security Attack Simulation & Detection</p>
+</header>
+
+<div class="container">
+
+    <!-- SYSTEM STATUS -->
+    <div class="status">
+        <h2>System Status</h2>
+
+        <p>
+            Status:
+            <span class="online">● ONLINE</span>
+        </p>
+
+        <p>
+            Attacks Detected:
+            <strong id="attack-count">0</strong>
+        </p>
+    </div>
+
+
+    <!-- ATTACK SIMULATIONS -->
+    <h2>Attack Simulations</h2>
+
+    <div class="attacks">
+
+        <!-- PORT SCAN -->
+        <div class="attack-card">
+            <h2>🔎 Port Scanning</h2>
+
+            <p>
+                Simulate a port scanning activity.
+            </p>
+
+            <button onclick="runPortScan()">
+                Run Simulation
+            </button>
+        </div>
+
+
+        <!-- BRUTE FORCE -->
+        <div class="attack-card">
+            <h2>🔐 Brute Force</h2>
+
+            <p>
+                Simulate repeated authentication attempts.
+            </p>
+
+            <button onclick="runBruteForce()">
+                Run Simulation
+            </button>
+        </div>
+
+
+        <!-- SQL INJECTION -->
+        <div class="attack-card">
+            <h2>💉 SQL Injection</h2>
+
+            <p>
+                Demonstrate a simulated SQL injection attempt.
+            </p>
+
+            <button onclick="runSQLInjection()">
+                Run Simulation
+            </button>
+        </div>
+
+
+        <!-- DOS -->
+        <div class="attack-card">
+            <h2>🌐 DoS Attack</h2>
+
+            <p>
+                Simulate a denial-of-service event.
+            </p>
+
+            <button onclick="runDoS()">Run Simulation</button>
+        </div>
+
+    </div>
+
+
+    <!-- PORT SCAN RESULTS -->
+    <div class="port-results">
+
+        <h2>🔎 Port Scan Results</h2>
+
+        <p>
+            Open ports detected:
+            <strong id="open-ports">0</strong>
+        </p>
+
+        <table>
+
+            <thead>
+                <tr>
+                    <th>Port</th>
+                    <th>Service</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+
+            <tbody id="port-table-body">
+
+                <tr>
+                    <td colspan="3">
+                        No scan performed yet.
+                    </td>
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+
+    <!-- LIVE ALERT PANEL -->
+<div class="logs">
+    <h2>🚨 Live Security Alerts</h2>
+
+    <div id="live-alert">
+        No new security alerts.
+    </div>
+</div>
+<!-- SECURITY LOGS -->
+    <div class="logs">
+
+        <h2>📋 Live Security Logs</h2>
+
+        <div id="security-logs">
+            Loading logs...
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+    // ==========================================
+    // LOAD SECURITY LOGS
+    // ==========================================
+
+    async function loadLogs() {
+
+        try {
+
+            const response = await fetch("/api/logs");
+
+            const logs = await response.json();
+
+            const container =
+                document.getElementById("security-logs");
+
+            const attackCount =
+                document.getElementById("attack-count");
+
+            container.innerHTML = "";
+
+            // Count actual security attacks
+            const detectedAttacks = logs.filter(log =>
+                log.event.toLowerCase().includes("attack") ||
+                log.event.toLowerCase().includes("injection") ||
+                log.event.toLowerCase().includes("failed login") ||
+                log.event.toLowerCase().includes("scan")
+       );
+       const alertBox = document.getElementById("live-alert");
+
+if (detectedAttacks.length > 0) {
+    const latestAttack = detectedAttacks[detectedAttacks.length - 1];
+
+    alertBox.innerHTML = `
+        <strong>${latestAttack.severity || "HIGH"}</strong>
+        - ${latestAttack.event}
+        | Source: ${latestAttack.source || "Simulation"}
+    `;
+} else {
+    alertBox.innerHTML = "No new security alerts.";
+}
+
+attackCount.textContent = detectedAttacks.length;
+
+
+            // If there are no logs
+            if (logs.length === 0) {
+
+                container.innerHTML =
+                    "<p>No attacks detected.</p>";
+
+                return;
+            }
+
+
+            // Display logs
+            logs.forEach(log => {
+
+                const entry =
+                    document.createElement("div");
+
+                entry.className = "log-entry";
+
+                entry.innerHTML =
+                    "[" + log.time + "] " +
+                    "<strong>" + log.severity + "</strong> - " +
+                    log.event +
+                    " | Source: " +
+                    log.source;
+
+                container.appendChild(entry);
+
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Error loading logs:",
+                error
+            );
+
+        }
+    }
+
+
+
+    // ==========================================
+    // PORT SCAN
+    // ==========================================
+
+    async function runPortScan() {
+
+        try {
+
+            const response =
+                await fetch("/api/port-scan", {
+                    method: "POST"
+                });
+
+            const data =
+                await response.json();
+
+            const openPorts =
+                data.open_ports || [];
+
+
+            const tableBody =
+                document.getElementById(
+                    "port-table-body"
+                );
+                tableBody.innerHTML = "";
+
+openPorts.forEach(port => {
+    let service = "Unknown";
+
+    if (port === 22) {
+        service = "SSH";
+    } else if (port === 80) {
+        service = "HTTP";
+    } else if (port === 443) {
+        service = "HTTPS";
+    }
+
+    const row = document.createElement("tr");
+
+    row.innerHTML = `
+        <td>${port}</td>
+        <td>${service}</td>
+        <td>OPEN</td>
+    `;
+
+    tableBody.appendChild(row);
+});
+
+
+            document.getElementById(
+                "open-ports"
+            ).textContent =
+                openPorts.length;
+
+
+            tableBody.innerHTML = "";
+
+
+            const services = {
+
+                22: "SSH",
+
+                80: "HTTP",
+
+                443: "HTTPS"
+
+            };
+
+
+            openPorts.forEach(port => {
+
+                tableBody.innerHTML += `
+                    <tr>
+                        <td>${port}</td>
+                        <td>${services[port] || "Unknown"}</td>
+                        <td>OPEN</td>
+                    </tr>
+                `;
+
+            });
+
+
+            alert(
+                "Port scan simulation complete!"
+            );
+
+
+            loadLogs();
+
+        } catch (error) {
+
+            console.error(
+                "Port scan error:",
+                error
+            );
+
+            alert(
+                "There was an error running the port scan."
+            );
+
+        }
+
+    }
+
+
+
+    // ==========================================
+    // BRUTE FORCE
+    // ==========================================
+
+    async function runBruteForce() {
+
+        try {
+
+            const response =
+                await fetch("/api/brute-force", {
+                    method: "POST"
+                });
+
+
+            const data =
+                await response.json();
+
+
+            alert(
+                data.message ||
+                "Brute Force simulation complete!"
+            );
+
+
+            loadLogs();
+
+        } catch (error) {
+
+            console.error(
+                "Brute Force error:",
+                error
+            );
+
+            alert(
+                "There was an error running the Brute Force simulation."
+            );
+
+        }
+
+    }
+
+    async function runDoS() {
+    try {
+        const response = await fetch("/api/dos", {
+            method: "POST"
+        });
+
+        const data = await response.json();
+
+        alert(data.message || "DoS simulation complete!");
+
+        loadLogs();
+
+    } catch (error) {
+        console.error("DoS error:", error);
+        alert("There was an error running the DoS simulation.");
+    }
+}
+
+    // ==========================================
+    // SQL INJECTION
+    // ==========================================
+
+    async function runSQLInjection() {
+
+        try {
+
+            const response =
+                await fetch("/api/sql-injection", {
+                    method: "POST"
+                });
+
+
+            const data =
+                await response.json();
+
+
+            alert(
+                data.message ||
+                "SQL Injection simulation complete!"
+            );
+
+
+            loadLogs();
+
+        } catch (error) {
+
+            console.error(
+                "SQL Injection error:",
+                error
+            );
+
+            alert(
+                "There was an error running the SQL Injection simulation."
+            );
+
+        }
+
+    }
+
+
+
+    // ==========================================
+    // START LOG SYSTEM
+    // ==========================================
+
+    loadLogs();
+
+    setInterval(
+        loadLogs,
+        1000
+    );
+
+</script>
+
+</body>
+</html>
