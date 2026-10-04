@@ -21,6 +21,41 @@
             text-align: center;
             border-bottom: 1px solid #334155;
         }
+        .statistics {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.stat-card {
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    background: #1e293b;
+    border: 1px solid #334155;
+}
+
+.stat-card h3 {
+    margin-bottom: 10px;
+    font-size: 16px;
+}
+
+.stat-card strong {
+    font-size: 30px;
+}
+
+.stat-card.high {
+    border-left: 5px solid #ef4444;
+}
+
+.stat-card.medium {
+    border-left: 5px solid #f59e0b;
+}
+
+.stat-card.low {
+    border-left: 5px solid #22c55e;
+}
 
         header h1 {
             margin: 0;
@@ -115,10 +150,22 @@
         }
 
         @media (max-width: 700px) {
-            .attacks {
-                grid-template-columns: 1fr;
-            }
-        }
+    .attacks {
+        grid-template-columns: 1fr;
+    }
+
+    .statistics {
+        grid-template-columns: 1fr;
+    }
+
+    .stat-card {
+        padding: 15px;
+    }
+
+    .stat-card strong {
+        font-size: 26px;
+    }
+}
     </style>
 </head>
 
@@ -144,6 +191,22 @@
             Attacks Detected:
             <strong id="attack-count">0</strong>
         </p>
+        <div class="statistics">
+    <div class="stat-card high">
+        <h3>HIGH</h3>
+        <strong id="high-count">0</strong>
+    </div>
+
+    <div class="stat-card medium">
+        <h3>MEDIUM</h3>
+        <strong id="medium-count">0</strong>
+    </div>
+
+    <div class="stat-card low">
+        <h3>LOW</h3>
+        <strong id="low-count">0</strong>
+    </div>
+</div>
     </div>
 
 
@@ -254,13 +317,21 @@
 <!-- SECURITY LOGS -->
     <div class="logs">
 
-        <h2>📋 Live Security Logs</h2>
+        <h2>▣ Live Security Logs</h2>
 
-        <div id="security-logs">
-            Loading logs...
-        </div>
+<select id="severity-filter">
+    <option value="ALL">All Severities</option>
+    <option value="HIGH">High</option>
+    <option value="MEDIUM">Medium</option>
+    <option value="LOW">Low</option>
+</select>
+<button onclick="clearLogs()" class="clear-logs-btn">
+    🗑️ Clear Security Logs
+</button>
 
-    </div>
+<div id="security-logs">
+    Loading logs...
+</div>
 
 </div>
 
@@ -271,7 +342,25 @@
     // LOAD SECURITY LOGS
     // ==========================================
 
-    async function loadLogs() {
+    async function clearLogs() {
+    try {
+        const response = await fetch("/api/clear-logs", {
+            method: "POST"
+        });
+
+        if (!response.ok) {
+            throw new Error("Failed to clear logs");
+        }
+
+        document.getElementById("security-logs").innerHTML =
+            "No security logs available.";
+
+        await loadLogs();
+
+    } catch (error) {
+        console.error("Error clearing logs:", error);
+    }
+}async function loadLogs() {
 
         try {
 
@@ -321,8 +410,19 @@ attackCount.textContent = detectedAttacks.length;
             }
 
 
-            // Display logs
-            logs.forEach(log => {
+            // Apply severity filter
+const filter = document.getElementById("severity-filter").value;
+
+const filteredLogs = filter === "ALL"
+    ? logs
+    : logs.filter(log => log.severity === filter);
+// Show message if no logs match the selected severity
+if (filteredLogs.length === 0) {
+    container.innerHTML = "<p>No logs found for this severity.</p>";
+    return;
+}
+    // Display logs
+            filteredLogs.forEach(log => {
 
                 const entry =
                     document.createElement("div");
@@ -350,7 +450,9 @@ attackCount.textContent = detectedAttacks.length;
         }
     }
 
-
+    document
+    .getElementById("severity-filter")
+    .addEventListener("change", loadLogs);
 
     // ==========================================
     // PORT SCAN
@@ -557,19 +659,67 @@ openPorts.forEach(port => {
         }
 
     }
+// ==========================================
+// DoS ATTACK
+// ==========================================
 
+async function runDoS() {
+    try {
+        const response = await fetch("/api/dos", {
+            method: "POST"
+        });
 
+        const data = await response.json();
 
+        alert(
+            data.message ||
+            "DoS attack simulation completed!"
+        );
+
+        loadLogs();
+
+    } catch (error) {
+        console.error("DoS attack error:", error);
+
+        alert(
+            "There was an error running the DoS attack simulation."
+        );
+    }
+}
+
+async function loadStatistics() {
+    try {
+        const response = await fetch("/api/statistics");
+        const stats = await response.json();
+
+        document.getElementById("attack-count").textContent =
+            stats.total_attacks;
+
+        const high = document.getElementById("high-count");
+        const medium = document.getElementById("medium-count");
+        const low = document.getElementById("low-count");
+
+        if (high) high.textContent = stats.high;
+        if (medium) medium.textContent = stats.medium;
+        if (low) low.textContent = stats.low;
+
+    } catch (error) {
+        console.error("Error loading statistics:", error);
+    }
+    setInterval(() => {
+    loadLogs();
+    loadStatistics();
+}, 3000);
+}
     // ==========================================
     // START LOG SYSTEM
     // ==========================================
 
     loadLogs();
+loadStatistics();
 
-    setInterval(
-        loadLogs,
-        1000
-    );
+setInterval(loadLogs, 1000);
+setInterval(loadStatistics, 1000);
 
 </script>
 

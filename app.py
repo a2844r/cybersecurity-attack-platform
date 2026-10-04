@@ -90,6 +90,52 @@ def dos():
 @app.route("/api/logs")
 def get_logs():
     return jsonify(security_logs[-20:])
+@app.route("/api/clear-logs", methods=["POST"])
+def clear_logs():
+    security_logs.clear()
+    return jsonify({"message": "Security logs cleared"})
+
+@app.route("/api/statistics")
+def statistics():
+    high = sum(
+        1 for log in security_logs
+        if log["severity"].lower() == "high"
+    )
+
+    medium = sum(
+        1 for log in security_logs
+        if log["severity"].lower() == "medium"
+    )
+
+    low = sum(
+        1 for log in security_logs
+        if log["severity"].lower() == "low"
+    )
+
+    total_attacks = high + medium + low
+
+    return jsonify({
+        "total_attacks": total_attacks,
+        "high": high,
+        "medium": medium,
+        "low": low,
+        "port_scans": sum(
+            1 for log in security_logs
+            if "port scan" in log["event"].lower()
+        ),
+        "brute_force": sum(
+            1 for log in security_logs
+            if "brute force" in log["event"].lower()
+        ),
+        "sql_injection": sum(
+            1 for log in security_logs
+            if "sql" in log["event"].lower()
+        ),
+        "dos": sum(
+            1 for log in security_logs
+            if "dos" in log["event"].lower()
+        )
+    })
 
 
 if __name__ == "__main__":
