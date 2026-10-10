@@ -2,6 +2,14 @@
 
 A web-based cybersecurity attack simulation and monitoring platform built with Python Flask, HTML, CSS and JavaScript.
 
+## 📸 Screenshots
+
+### Main Dashboard
+![Sentinel Security Platform Dashboard](screenshots/dashboard.png)
+
+### Security Monitoring
+![Security Logs and Alerts](screenshots/security-logs.png)
+
 ## 🛡️ Overview
 
 Sentinel Security Platform is an educational cybersecurity project designed to simulate common cyber attacks and display security events through a real-time monitoring dashboard.
